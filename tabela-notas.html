@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Notas para Abitur</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+
+
+
+
+        /* Content wrapper styles - base styles */
+        .content-wrapper {
+            display: flex;
+            gap: 20px; 
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        /* Sidebar collapsed state - conteúdo centralizado */
+        .content-wrapper.sidebar-collapsed {
+            justify-content: center !important;
+            padding-left: 0 !important; /* Remover o espaço do sidebar */
+        }
+        
+        /* Info section styles quando sidebar está colapsado */
+        .content-wrapper.sidebar-collapsed .info-section {
+            margin: 0 auto !important;
+            max-width: 1000px;
+            position: relative;
+            left: 0; /* Não é necessário o ajuste lateral */
+        }
+        
+        /* Estilos para quando o sidebar está aberto */
+        .content-wrapper:not(.sidebar-collapsed) .info-section {
+            margin-left: 0 !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .content-wrapper.sidebar-collapsed {
+                padding-left: 0 !important;
+            }
+        }
+
+        /* Fixed toggle button style */
+        #rules-toggle {
+            position: absolute;
+            left: 0;
+            top: 120px;
+            width: 110px;
+            height: 40px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            z-index: 100;
+            gap: 8px;
+        }
+
+        /* Botão de fechar - visível apenas quando o sidebar está aberto */
+        #close-sidebar {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background-color: #e53935;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 100;
+            float: right;
+            margin-top: -5px;
+            margin-right: -5px;
+        }
+
+        /* Esconder o botão de fechar quando o sidebar está fechado */
+        .rules-section.collapsed #close-sidebar {
+            display: none;
+        }
+
+        /* Esconder o botão de regras quando o sidebar está aberto */
+        .content-wrapper:not(.sidebar-collapsed) #rules-toggle {
+            display: none;
+        }
+
+        #rules-toggle:hover {
+            transform: translateX(3px);
+            box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+        }
+        
+        #rules-toggle:before {
+            display: none;
+        }
+        
+        /* Estilos para quando o sidebar está aberto */
+        .rules-section {
+            width: 320px;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex-shrink: 0;
+            border-left: 4px solid #4caf50;
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* Indicador visual de que é um sidebar */
+        .rules-section:before {
+            display: none;
+        }
+
+        /* Media query styles */
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .content-wrapper.sidebar-collapsed {
+                padding-left: 0;
+            }
+            
+            .content-wrapper.sidebar-collapsed .info-section {
+                margin: 0 auto;
+                width: 100%;
+            }
+            
+            .rules-section {
+                position: relative;
+                width: 100%;
+            }
+            
+            .rules-section.collapsed {
+                transform: translateY(-200%);
+            }
+            
+            #rules-toggle {
+                position: fixed;
+                bottom: 20px;
+                top: auto;
+                right: 20px;
+                left: auto;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            }
+            
+            #rules-toggle:before {
+                content: "Mostrar Regras";
+                left: auto;
+                right: 60px;
+                top: 50%;
+            }
+        }
+
+        /* Rules styles when sidebar is closed */
+        .rules-section.collapsed {
+            transform: translateX(-350px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0 8px 8px 0;
+            z-index: 99;
+            overflow-y: auto;
+            padding-top: 70px;
+        }
+
+        /* Rules list styling */
+        .rules-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+
+        .rule-item.valid {
+            background-color: #e8f5e9;
+            border-color: #4caf50;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.1);
+        }
+
+        .rule-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #ddd;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .rule-item.valid .rule-icon {
+            background-color: #4caf50;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.2);
+        }
+
+        .rule-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Rules section header */
+        .rules-section h2 {
+            color: #4caf50;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+            text-align: center;
+        }
+
+        .grades-table {
+            width: 100%;
+            margin: 20px 0;
+            position: relative;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .grades-table th, .grades-table td {
+            position: relative;
+        }
+
+        .select-all-container {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .todos-column {
+            width: 40px;
+            text-align: center;
+            background: transparent;
+            border-left: none !important;
+        }
+
+        .todos-column .select-all-header {
+            margin-bottom: 5px;
+        }
+
+        .todos-column input[type="checkbox"],
+        .select-all-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grades-table th.todos-column, 
+        .grades-table td:last-child {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .select-all-header {
+            font-weight: normal;
+            font-size: 12px;
+            color: #666;
+        }
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .rules-section {
+                position: relative;
+                transform: none !important;
+            width: 100%;
+            }
+            
+            .rules-section .toggle-btn {
+                display: none;
+            }
+        }
+
+        .grades-table th, .grades-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .grades-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .grades-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .grades-table input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .grades-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .grade-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .checkbox-column {
+            width: 40px;
+            text-align: center;
+        }
+
+        .select-all-wrapper {
+            position: absolute;
+            right: -45px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subject-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .select-all-header {
+            color: #999;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .select-all-container input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .rules-section {
+                position: relative;
+                transform: none !important;
+                width: 100% !important;
+            }
+            
+            .rules-section .toggle-btn {
+                display: none;
+            }
+            
+            .content-wrapper.sidebar-collapsed .info-section {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .select-all-wrapper {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+
+
+
+        .content-wrapper.sidebar-collapsed .info-section {
+            margin: 0 auto;
+            max-width: 900px;
+            width: 100%;
+            transition: margin-left 0.3s ease, margin-right 0.3s ease;
+        }
+
+        .select-all-container {
+            text-align: right;
+            margin: 10px 0;
+        }
+
+        .select-all-container label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .select-all-container input[type="checkbox"] {
+            margin-left: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .todos-column {
+            width: 40px;
+            text-align: center;
+            background: transparent;
+            border-left: none !important;
+        }
+
+        .select-all-44 {
+            width: 18px;
+            height: 18px;
+            margin: 5px auto;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* Adding a style further down that overrides previous ones */
+        .content-wrapper.sidebar-collapsed {
+            /* Empty rule - see complete implementation above */
+        }
+
+        .content-wrapper.sidebar-collapsed .info-section {
+            /* Empty rule - see complete implementation above */
+        }
+
+        /* Remove any conflicting styles in media queries */
+        @media (max-width: 1200px) {
+            .content-wrapper.sidebar-collapsed .info-section {
+                /* Empty rule - see complete implementation above */
+            }
+        }
+
+        @keyframes pulseButton {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #sidebarToggleBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+
+        /* Info section styles */
+        .info-section {
+            flex: 1;
+            min-width: 0;
+            transition: margin 0.3s ease;
+        }
+
+        /* Collapsed sidebar styles */
+        .content-wrapper.sidebar-collapsed {
+            justify-content: center;
+            padding-left: 40px; /* Espaço para o botão */
+        }
+
+        .content-wrapper:not(.sidebar-collapsed) {
+            justify-content: flex-start;
+            padding-left: 0;
+        }
+
+        .content-wrapper.sidebar-collapsed .info-section {
+            margin: 0 auto;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        /* Adiciona margem extra quando o sidebar está aberto */
+        .content-wrapper:not(.sidebar-collapsed) .info-section {
+            margin-left: 20px;
+        }
+
+        /* Estilos para quando o sidebar está aberto - fixo no topo */
+        .rules-section {
+            width: 320px;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex-shrink: 0;
+            border-left: 4px solid #4caf50;
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Rules styles when sidebar is closed */
+        .rules-section.collapsed {
+            transform: translateX(-350px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0 8px 8px 0;
+            z-index: 99;
+            overflow-y: auto;
+            padding-top: 70px;
+        }
+
+        /* Botão quando o sidebar está aberto - fixo no topo */
+        .content-wrapper:not(.sidebar-collapsed) #rules-toggle {
+            position: fixed !important;
+            left: auto !important;
+            right: calc(100% - 320px) !important;
+            top: 100px !important;
+            border-radius: 0 6px 6px 0 !important;
+            background-color: #e53935 !important;
+            width: 100px !important;
+            z-index: 1000 !important;
+        }
+
+        /* Media queries para dispositivos móveis */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+                padding: 10px;
+                width: 100%;
+            }
+            
+            .rules-section {
+                position: static;
+                width: auto;
+                height: auto;
+                max-height: none;
+                margin-bottom: 20px;
+                overflow: visible;
+                transform: none !important;
+                top: auto;
+                flex-shrink: 1;
+                z-index: 1;
+            }
+            
+            .rules-section.collapsed {
+                transform: none !important;
+            }
+            
+            .rules-section .toggle-btn {
+                display: none;
+            }
+            
+            .info-section {
+                width: 100%;
+                margin-left: 0;
+                overflow-x: auto;
+            }
+            
+            .rules-title {
+                text-align: center;
+            }
+            
+            .content-wrapper.sidebar-collapsed .info-section {
+                margin: 0;
+                max-width: 100%;
+            }
+            
+            .rules-counter {
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <main>
+
+
+        <section class="page-header" style="text-align: center; margin: 40px 0; padding: 20px;">
+            <h1 style="font-size: 2.5em; color: white; margin-bottom: 15px;">Tabela de Notas para Abitur</h1>
+            <p style="font-size: 1.2em; color: white; margin-bottom: 25px;">Calcule suas notas usando as regras de seleção do Abitur</p>
+            <button id="showInfoBtn" class="info-button" style="margin: 0 auto; padding: 12px 25px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                <i class="fas fa-question-circle"></i>
+                Como usar a tabela?
+            </button>
+        </section>
+
+        <!-- Info Modal -->
+        <div id="infoModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div class="modal-content" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <span class="close-modal" onclick="closeInfoModal()" style="position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; color: #666;">&times;</span>
+                
+                <h2 style="color: #333; margin-bottom: 20px; text-align: center;">📌 Como funciona a Tabela de Notas Automatizada do Abitur?</h2>
+                
+                <div style="margin-bottom: 25px;">
+                    <p style="margin-bottom: 15px; line-height: 1.6;">A Tabela de Notas Automatizada foi criada para ajudar os alunos a entender melhor como suas notas serão contabilizadas no Abitur. No entanto, é essencial lembrar que as regras do Abitur podem variar de ano para ano e entre escolas. Isso pode gerar dúvidas sobre quais diretrizes são válidas.</p>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Como a tabela foi feita de maneira independente, fiz o possível para manter as regras sempre atualizadas, mas não é possível garantir 100% de precisão. 📢 Por isso, sempre consulte a direção da sua escola para ter certeza das regras aplicáveis ao seu caso. Caso perceba que alguma regra está desatualizada, por favor, nos avise através do e-mail: rbraganca@ethz.ch</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #4caf50; margin-bottom: 10px;">🎯 Por que usar essa ferramenta?</h3>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">A tabela não é obrigatória, pois sua nota final será calculada automaticamente ao final do Abitur com base nos seus melhores desempenhos ao longo dos semestres. No entanto, entender as regras pode ser muito útil para:</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Escolher estrategicamente quais matérias levar para as provas finais.</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Saber em quais disciplinas focar mais ao longo dos semestres.</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Evitar surpresas na hora da contagem das notas.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #4caf50; margin-bottom: 10px;">📊 Como funciona o sistema de notas no Abitur?</h3>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Durante os quatro semestres do Abitur, os alunos acumulam notas em 11 matérias (ou 10, caso tenham retirado uma das Ciências), totalizando 44 ou 40 notas. No entanto, nem todas essas notas serão contabilizadas para a média final.</p>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Seguindo as regras, somente os semestres com as melhores notas serão utilizados, desde que respeitem os seguintes critérios:</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>4 semestres de Alemão</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>4 semestres de Português ou 4 semestres de Inglês</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>4 semestres de Matemática</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>14 notas somando Português, Inglês e Ciências (Física, Química e Biologia)</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Pelo menos 2 semestres de História</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Pelo menos 4 semestres somando História + Filosofia</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Pelo menos 3 semestres de Artes ou Música</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Esporte pode ter no máximo 3 semestres</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Total de 36 semestres válidos</span>
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-check-circle" style="color: #4caf50; margin-top: 3px;"></i>
+                            <span>Todas as matérias escolhidas para a prova final devem ter todos os semestres contabilizados</span>
+                        </li>
+                    </ul>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Além disso, há critérios específicos sobre quais matérias podem ser escolhidas para as provas finais.</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #4caf50; margin-bottom: 10px;">📢 Lembre-se</h3>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">Essa tabela é um guia para facilitar seu planejamento, mas a decisão final sobre as notas sempre segue as diretrizes da sua escola. Em caso de dúvidas, consulte a coordenação!</p>
+                </div>
+
+                <button onclick="closeInfoModal()" style="width: 100%; padding: 10px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                    Entendi
+                </button>
+            </div>
+        </div>
+
+        <div class="content-wrapper sidebar-collapsed">
+            <button id="rules-toggle" title="Mostrar regras do Abitur">
+                <i class="fas fa-tasks"></i> Regras
+            </button>
+            
+            <section class="rules-section collapsed">
+                <div style="position: relative; margin-bottom: 15px;">
+                    <button id="close-sidebar" title="Fechar regras">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h2 style="margin: 0; padding-right: 30px;">Regras de Seleção</h2>
+                </div>
+                <div id="rules-counter" style="background-color: #f0f8f0; border-radius: 4px; padding: 8px 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 500; color: #333;">Regras atendidas:</span>
+                    <span style="font-weight: bold; color: #4caf50;"><span id="rules-valid-count">0</span>/<span id="rules-total-count">12</span></span>
+                </div>
+                <p style="margin-top: 0; margin-bottom: 15px; color: #666; font-size: 14px;">
+                    Verifique se todas as regras estão sendo atendidas:
+                </p>
+                <ul class="rules-list">
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">4 Semestres de Deutsch</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">4 Semestres de Português ou 4 Semestres de Inglês</span>
+                    </li>
+                    <li class="rule-item"> 
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">4 Semestres de Mathematik</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Português + Inglês + NW = pelo menos 14 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Geschichte pelo menos 2 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Geschichte + Philosophie pelo menos 4 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Kunst/Musik pelo menos 3 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Sport no máximo 3 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Total de 36 Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">5 Provas finais</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Matérias que vai fazer prova → todos os Semestres</span>
+                    </li>
+                    <li class="rule-item">
+                        <div class="rule-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <span class="rule-text">Pelo menos 25 pontos nas provas</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="info-section">
+                <div class="save-load-section" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="save-name" placeholder="Nome da tabela" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <button id="save-table" style="padding: 8px 16px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="saved-tables" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Selecione uma tabela salva</option>
+                        </select>
+                        <button id="load-table" style="padding: 8px 16px; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-folder-open"></i> Carregar
+                        </button>
+                        <button id="delete-table" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="select-all-container">
+                    <label for="select-all-44">
+                        Selecionar todos os semestres
+                        <input type="checkbox" id="select-all-44" class="select-all-44" title="Selecionar todos os 44 semestres">
+                    </label>
+                </div>
+                
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Matéria</th>
+                            <th>1. Semester</th>
+                            <th>2. Semester</th>
+                            <th>3. Semester</th>
+                            <th>4. Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Deutsch</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Portugiesisch</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Englisch</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Mathe</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Geschi</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Philosophie</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Bio</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Physik</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Chemie</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Musik/Kunst</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                        <tr>
+                            <td>Sport</td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                            <td><div class="grade-cell">
+                                <input type="number" min="1" max="15" step="1">
+                                <input type="checkbox">
+                            </div></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                        <small>Média Total:</small>
+                                        <span class="total-average">-</span>
+                                <br>
+                                        <small>Média Selecionados:</small>
+                                        <span class="selected-average">-</span>
+                            </td>
+                            <td class="semester-average">-</td>
+                            <td class="semester-average">-</td>
+                            <td class="semester-average">-</td>
+                            <td class="semester-average">-</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="final-exams-section" style="margin-top: 40px;">
+                    <h2>Abi Prüfungen</h2>
+                    <p style="text-align: center; margin-bottom: 20px;">Selecione as matérias para suas provas finais</p>
+                    
+                    <table class="grades-table">
+                        <thead>
+                            <tr>
+                                <th>Matéria</th>
+                                <th>Nota (0-15)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Deutsch (Schriftlich 1)</td>
+                                <td><input type="number" min="0" max="15" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select class="subject-select" style="width: 100%; padding: 5px;">
+                                        <option value="">Schriftlich 2</option>
+                                        <option value="portugiesisch">Portugiesisch</option>
+                                        <option value="englisch">Englisch</option>
+                                        <option value="mathe">Mathe</option>
+                                        <option value="geschi">Geschi</option>
+                                        <option value="philosophie">Philosophie</option>
+                                        <option value="physik">Physik</option>
+                                        <option value="chemie">Chemie</option>
+                                        <option value="biologie">Biologie</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" min="0" max="15" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select class="subject-select" style="width: 100%; padding: 5px;">
+                                        <option value="">Schriftlich 3</option>
+                                        <option value="portugiesisch">Portugiesisch</option>
+                                        <option value="englisch">Englisch</option>
+                                        <option value="mathe">Mathe</option>
+                                        <option value="geschi">Geschi</option>
+                                        <option value="philosophie">Philosophie</option>
+                                        <option value="physik">Physik</option>
+                                        <option value="chemie">Chemie</option>
+                                        <option value="biologie">Biologie</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" min="0" max="15" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select class="subject-select" style="width: 100%; padding: 5px;">
+                                        <option value="">Mündlich 1</option>
+                                        <option value="portugiesisch">Portugiesisch</option>
+                                        <option value="englisch">Englisch</option>
+                                        <option value="mathe">Mathe</option>
+                                        <option value="geschi">Geschi</option>
+                                        <option value="philosophie">Philosophie</option>
+                                        <option value="physik">Physik</option>
+                                        <option value="chemie">Chemie</option>
+                                        <option value="biologie">Biologie</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" min="0" max="15" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <select class="subject-select" style="width: 100%; padding: 5px;">
+                                        <option value="">Mündlich 2</option>
+                                        <option value="portugiesisch">Portugiesisch</option>
+                                        <option value="englisch">Englisch</option>
+                                        <option value="mathe">Mathe</option>
+                                        <option value="geschi">Geschi</option>
+                                        <option value="philosophie">Philosophie</option>
+                                        <option value="physik">Physik</option>
+                                        <option value="chemie">Chemie</option>
+                                        <option value="biologie">Biologie</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" min="0" max="15" step="1"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="grades-calculation-section" style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h2 style="text-align: center; margin-bottom: 20px;">Cálculo da Nota Final</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: center;">
+                        <div class="grade-item">
+                            <div class="grade-header">
+                                <h3 style="display: inline; margin-right: 8px;">EI</h3>
+                                <span class="info-icon" title="EI = S*40/36, em que S é a soma de todos os 36 semestres selecionados">
+                                    <i class="fas fa-info-circle" style="color: #666; cursor: help;"></i>
+                                </span>
+                            </div>
+                            <div class="grade-value" style="font-size: 24px; font-weight: bold; margin-top: 10px;">-</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="grade-header">
+                                <h3 style="display: inline; margin-right: 8px;">EII</h3>
+                                <span class="info-icon" title="EII = 4*P, em que P é a soma das 5 provas finais">
+                                    <i class="fas fa-info-circle" style="color: #666; cursor: help;"></i>
+                                </span>
+                            </div>
+                            <div class="grade-value" style="font-size: 24px; font-weight: bold; margin-top: 10px;">-</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="grade-header">
+                                <h3 style="display: inline; margin-right: 8px;">N</h3>
+                                <span class="info-icon" title="N = EI + EII">
+                                    <i class="fas fa-info-circle" style="color: #666; cursor: help;"></i>
+                                </span>
+                            </div>
+                            <div class="grade-value" style="font-size: 24px; font-weight: bold; margin-top: 10px;">-</div>
+                        </div>
+                        <div class="grade-item">
+                            <div class="grade-header">
+                                <h3 style="display: inline; margin-right: 8px;">NC</h3>
+                                <span class="info-icon" title="NC = 5+2/3 - N/180">
+                                    <i class="fas fa-info-circle" style="color: #666; cursor: help;"></i>
+                                </span>
+                            </div>
+                            <div class="grade-value" style="font-size: 24px; font-weight: bold; margin-top: 10px;">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-top: 1px solid #ddd;">
+            <p style="margin: 0; color: #666; font-size: 16px;">Tabela de Notas para Abitur</p>
+        </div>
+    </footer>
+
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Função auxiliar para encontrar uma linha por matéria
+            function findRowBySubject(subject) {
+                return Array.from(document.querySelectorAll('.grades-table tbody tr'))
+                    .find(row => row.querySelector('td:first-child').textContent.trim() === subject);
+            }
+
+            // Função auxiliar para verificar se todos os checkboxes de uma linha estão marcados
+            function areAllChecked(checkboxes) {
+                return Array.from(checkboxes).every(checkbox => checkbox.checked);
+            }
+
+            // Função auxiliar para contar checkboxes marcados
+            function countChecked(checkboxes) {
+                return Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+            }
+
+            // Regra 1: Deutsch
+            const deutschRow = findRowBySubject('Deutsch');
+            const deutschCheckboxes = deutschRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const deutschRule = document.querySelector('.rules-list li:nth-child(1)');
+
+            function checkDeutschRule() {
+                if (areAllChecked(deutschCheckboxes)) {
+                    deutschRule.classList.add('valid');
+                } else {
+                    deutschRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            deutschCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkDeutschRule);
+            });
+
+            // Regra 2: Port ou Eng
+            const portRow = findRowBySubject('Portugiesisch');
+            const engRow = findRowBySubject('Englisch');
+            const portCheckboxes = portRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const engCheckboxes = engRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const langRule = document.querySelector('.rules-list li:nth-child(2)');
+
+            function checkLanguageRule() {
+                const portAllChecked = areAllChecked(portCheckboxes);
+                const engAllChecked = areAllChecked(engCheckboxes);
+                if (portAllChecked || engAllChecked) {
+                    langRule.classList.add('valid');
+                } else {
+                    langRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            portCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkLanguageRule);
+            });
+            engCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkLanguageRule);
+            });
+
+            // Regra 3: Mathe
+            const matheRow = findRowBySubject('Mathe');
+            const matheCheckboxes = matheRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const matheRule = document.querySelector('.rules-list li:nth-child(3)');
+
+            function checkMatheRule() {
+                if (areAllChecked(matheCheckboxes)) {
+                    matheRule.classList.add('valid');
+                } else {
+                    matheRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            matheCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkMatheRule);
+            });
+
+            // Regra 4: Port + Eng + NW pelo menos 14 semestres
+            const bioRow = findRowBySubject('Bio');
+            const physikRow = findRowBySubject('Physik');
+            const chemieRow = findRowBySubject('Chemie');
+            const bioCheckboxes = bioRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const physikCheckboxes = physikRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const chemieCheckboxes = chemieRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const langNWRule = document.querySelector('.rules-list li:nth-child(4)');
+
+            function checkLanguageNWRule() {
+                const portCount = countChecked(portCheckboxes);
+                const engCount = countChecked(engCheckboxes);
+                const bioCount = countChecked(bioCheckboxes);
+                const physikCount = countChecked(physikCheckboxes);
+                const chemieCount = countChecked(chemieCheckboxes);
+                
+                const totalCount = portCount + engCount + bioCount + physikCount + chemieCount;
+                
+                if (totalCount >= 14) {
+                    langNWRule.classList.add('valid');
+                } else {
+                    langNWRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            // Adiciona listeners para os checkboxes de ciências naturais
+            bioCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkLanguageNWRule);
+            });
+            physikCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkLanguageNWRule);
+            });
+            chemieCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkLanguageNWRule);
+            });
+
+            // Atualiza os listeners de Port e Eng para também verificar essa regra
+            portCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkLanguageRule();
+                    checkLanguageNWRule();
+                });
+            });
+            engCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkLanguageRule();
+                    checkLanguageNWRule();
+                });
+            });
+
+            // Regra 5: Geschi mínimo 2 semestres
+            const geschiRow = findRowBySubject('Geschi');
+            const geschiCheckboxes = geschiRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const geschiRule = document.querySelector('.rules-list li:nth-child(5)');
+
+            function checkGeschiRule() {
+                const geschiCount = countChecked(geschiCheckboxes);
+                if (geschiCount >= 2) {
+                    geschiRule.classList.add('valid');
+                } else {
+                    geschiRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            geschiCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkGeschiRule();
+                    checkGeschiPhiloRule(); // Verifica também a regra combinada
+                });
+            });
+
+            // Regra 6: Geschi + Philo mínimo 4 semestres
+            const philoRow = findRowBySubject('Philosophie');
+            const philoCheckboxes = philoRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const geschiPhiloRule = document.querySelector('.rules-list li:nth-child(6)');
+
+            function checkGeschiPhiloRule() {
+                const geschiCount = countChecked(geschiCheckboxes);
+                const philoCount = countChecked(philoCheckboxes);
+                if (geschiCount + philoCount >= 4) {
+                    geschiPhiloRule.classList.add('valid');
+                } else {
+                    geschiPhiloRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            philoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkGeschiPhiloRule);
+            });
+
+            // Regra 7: Kunst/Musik pelo menos 3 semestres
+            const kunstRow = findRowBySubject('Musik/Kunst');
+            const kunstCheckboxes = kunstRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const kunstRule = document.querySelector('.rules-list li:nth-child(7)');
+
+            function checkKunstRule() {
+                const kunstCount = countChecked(kunstCheckboxes);
+                if (kunstCount >= 3) {
+                    kunstRule.classList.add('valid');
+                } else {
+                    kunstRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            kunstCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkKunstRule();
+                    checkTotalSemestersRule(); // Atualiza o total
+                });
+            });
+
+            // Regra 8: Sport no máximo 3 semestres
+            const sportRow = findRowBySubject('Sport');
+            const sportCheckboxes = sportRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+            const sportRule = document.querySelector('.rules-list li:nth-child(8)');
+
+            function checkSportRule() {
+                const sportCount = countChecked(sportCheckboxes);
+                if (sportCount <= 3) {
+                    sportRule.classList.add('valid');
+                } else {
+                    sportRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            sportCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkSportRule();
+                    checkTotalSemestersRule(); // Atualiza o total
+                });
+            });
+
+            // Regra 9: Total de 36 Semestres
+            const totalRule = document.querySelector('.rules-list li:nth-child(9)');
+
+            function checkTotalSemestersRule() {
+                const allCheckboxes = document.querySelectorAll('.grade-cell input[type="checkbox"]');
+                const totalChecked = countChecked(allCheckboxes);
+                if (totalChecked === 36) {
+                    totalRule.classList.add('valid');
+                } else {
+                    totalRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            // Adiciona o listener de mudança para todos os checkboxes para atualizar o total
+            document.querySelectorAll('.grade-cell input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', checkTotalSemestersRule);
+            });
+
+            // Verificação inicial de todas as regras
+            checkDeutschRule();
+            checkLanguageRule();
+            checkLanguageNWRule();
+            checkMatheRule();
+            checkGeschiRule();
+            checkGeschiPhiloRule();
+            checkKunstRule();
+            checkSportRule();
+            checkTotalSemestersRule();
+
+            // Adiciona funcionalidade de "Selecionar Todos" para cada linha
+            document.querySelectorAll('.select-all').forEach(selectAll => {
+                const row = selectAll.closest('tr');
+                const checkboxes = row.querySelectorAll('.grade-cell input[type="checkbox"]');
+
+                // Atualiza o estado do "Selecionar Todos" baseado nos checkboxes da linha
+                function updateSelectAll() {
+                    selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+                    selectAll.indeterminate = Array.from(checkboxes).some(cb => cb.checked) && 
+                                           !Array.from(checkboxes).every(cb => cb.checked);
+                }
+
+                // Quando "Selecionar Todos" é clicado
+                selectAll.addEventListener('change', () => {
+                    const newState = selectAll.checked;
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = newState;
+                        // Dispara o evento change para atualizar as regras
+                        checkbox.dispatchEvent(new Event('change'));
+                    });
+                });
+
+                // Quando qualquer checkbox da linha é clicado
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        updateSelectAll();
+                    });
+                });
+
+                // Estado inicial
+                updateSelectAll();
+            });
+
+            // Adiciona funcionalidade de "Selecionar Todos os 44 Semestres"
+            const selectAll44 = document.querySelector('.select-all-44');
+            const allCheckboxes = document.querySelectorAll('.grade-cell input[type="checkbox"]');
+
+            function updateSelectAll44() {
+                selectAll44.checked = Array.from(allCheckboxes).every(cb => cb.checked);
+                selectAll44.indeterminate = Array.from(allCheckboxes).some(cb => cb.checked) && 
+                                        !Array.from(allCheckboxes).every(cb => cb.checked);
+            }
+
+            selectAll44.addEventListener('change', () => {
+                const newState = selectAll44.checked;
+                allCheckboxes.forEach(checkbox => {
+                    checkbox.checked = newState;
+                    checkbox.dispatchEvent(new Event('change'));
+                });
+            });
+
+            // Atualiza o estado do "Selecionar Todos os 44" quando qualquer checkbox é alterado
+            allCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectAll44);
+            });
+
+            // Estado inicial do "Selecionar Todos os 44"
+            updateSelectAll44();
+
+            // Regra 10: 5 Provas finais
+            const finalExamsRule = document.querySelector('.rules-list li:nth-child(10)');
+            const finalExamsSelects = document.querySelectorAll('.final-exams-section .subject-select');
+            
+            function updateSelectOptions() {
+                // Cria um conjunto de matérias já selecionadas
+                const selectedSubjects = new Set();
+                finalExamsSelects.forEach(select => {
+                    if (select.value) {
+                        selectedSubjects.add(select.value);
+                    }
+                });
+
+                // Atualiza as opções disponíveis em cada select
+                finalExamsSelects.forEach(select => {
+                    Array.from(select.options).forEach(option => {
+                        if (option.value) { // Ignora a opção vazia (placeholder)
+                            // Desabilita a opção se já estiver selecionada em outro select
+                            option.disabled = selectedSubjects.has(option.value) && option.value !== select.value;
+                        }
+                    });
+                });
+            }
+            
+            function checkFinalExamsCountRule() {
+                const selectedSubjects = Array.from(finalExamsSelects)
+                    .filter(select => select.value !== "");
+                if (selectedSubjects.length === 4) { // 4 selecionadas + Deutsch (que é fixa)
+                    finalExamsRule.classList.add('valid');
+                } else {
+                    finalExamsRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            // Regra 11: Matérias selecionadas para prova final precisam ter 4 semestres
+            const finalExamsFullSemestersRule = document.querySelector('.rules-list li:nth-child(11)');
+
+            function checkFinalExamsFullSemestersRule() {
+                let allHaveFullSemesters = true;
+                
+                // Verifica Deutsch (que é fixa)
+                const deutschHasAllSemesters = areAllChecked(deutschCheckboxes);
+                if (!deutschHasAllSemesters) {
+                    allHaveFullSemesters = false;
+                }
+
+                // Verifica as outras matérias selecionadas
+                finalExamsSelects.forEach(select => {
+                    if (select.value) {
+                        const subjectName = select.options[select.selectedIndex].text;
+                        const subjectRow = findRowBySubject(subjectName);
+                        if (subjectRow) {
+                            const subjectCheckboxes = subjectRow.querySelectorAll('.grade-cell input[type="checkbox"]');
+                            if (!areAllChecked(subjectCheckboxes)) {
+                                allHaveFullSemesters = false;
+                            }
+                        }
+                    }
+                });
+
+                if (allHaveFullSemesters) {
+                    finalExamsFullSemestersRule.classList.add('valid');
+                } else {
+                    finalExamsFullSemestersRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            // Regra 12: Pelo menos 25 pontos nas provas finais
+            const finalExamsPointsRule = document.querySelector('.rules-list li:nth-child(12)');
+            const finalExamsInputs = document.querySelectorAll('.final-exams-section input[type="number"]');
+
+            function checkFinalExamsPointsRule() {
+                let totalPoints = 0;
+                finalExamsInputs.forEach(input => {
+                    const value = parseInt(input.value) || 0;
+                    totalPoints += value;
+                });
+
+                if (totalPoints >= 25) {
+                    finalExamsPointsRule.classList.add('valid');
+                } else {
+                    finalExamsPointsRule.classList.remove('valid');
+                }
+                updateRulesCounter();
+            }
+
+            // Event Listeners para as regras das provas finais
+            finalExamsSelects.forEach(select => {
+                select.addEventListener('change', () => {
+                    updateSelectOptions();
+                    checkFinalExamsCountRule();
+                    checkFinalExamsFullSemestersRule();
+                });
+            });
+
+            finalExamsInputs.forEach(input => {
+                input.addEventListener('input', checkFinalExamsPointsRule);
+            });
+
+            // Adiciona verificação das regras de prova final quando os checkboxes são alterados
+            document.querySelectorAll('.grade-cell input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    checkFinalExamsFullSemestersRule();
+                });
+            });
+
+            // Verificação inicial das regras de prova final
+            checkFinalExamsCountRule();
+            checkFinalExamsFullSemestersRule();
+            checkFinalExamsPointsRule();
+
+            // Funções para cálculo das notas finais
+            function calculateGrades() {
+                // Verifica se todas as regras estão válidas
+                const allRules = document.querySelectorAll('.rules-list li');
+                const allRulesValid = Array.from(allRules).every(rule => rule.classList.contains('valid'));
+
+                // Calcula EI
+                let semesterSum = 0;
+                document.querySelectorAll('.grade-cell').forEach(cell => {
+                    const numberInput = cell.querySelector('input[type="number"]');
+                    const checkbox = cell.querySelector('input[type="checkbox"]');
+                    if (checkbox && checkbox.checked && numberInput && numberInput.value) {
+                        semesterSum += parseInt(numberInput.value);
+                    }
+                });
+                const EI = (semesterSum * 40) / 36;
+
+                // Calcula EII
+                let finalExamsSum = 0;
+                document.querySelectorAll('.final-exams-section input[type="number"]').forEach(input => {
+                    if (input.value) {
+                        finalExamsSum += parseInt(input.value);
+                    }
+                });
+                const EII = 4 * finalExamsSum;
+
+                // Calcula N
+                const N = EI + EII;
+
+                // Calcula NC e arredonda para baixo na primeira casa decimal
+                const NC = Math.floor((5 + 2/3 - N/180) * 10) / 10;
+
+                // Atualiza os valores na tela
+                const gradeValues = document.querySelectorAll('.grade-value');
+                if (allRulesValid) {
+                    gradeValues[0].textContent = EI.toFixed(2);
+                    gradeValues[1].textContent = EII.toFixed(2);
+                    gradeValues[2].textContent = N.toFixed(2);
+                    gradeValues[3].textContent = NC.toFixed(1);
+                } else {
+                    gradeValues.forEach(value => value.textContent = '-');
+                }
+            }
+
+            // Adiciona listeners para recalcular as notas quando houver mudanças
+            document.querySelectorAll('.grade-cell input[type="number"], .grade-cell input[type="checkbox"], .final-exams-section input[type="number"]').forEach(input => {
+                input.addEventListener('change', calculateGrades);
+                input.addEventListener('input', calculateGrades);
+            });
+
+            // Calcula as notas iniciais
+            calculateGrades();
+
+            // Função para calcular médias dos semestres
+            function calculateAverages() {
+                const rows = document.querySelectorAll('.grades-table tbody tr');
+                const semesterAverages = [0, 0, 0, 0];
+                const semesterCounts = [0, 0, 0, 0];
+                let totalSum = 0;
+                let totalCount = 0;
+                let selectedSum = 0;
+                let selectedCount = 0;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('.grade-cell');
+                    cells.forEach((cell, index) => {
+                        const input = cell.querySelector('input[type="number"]');
+                        const checkbox = cell.querySelector('input[type="checkbox"]');
+                        const value = parseInt(input.value);
+                        
+                        if (!isNaN(value)) {
+                            semesterAverages[index] += value;
+                            semesterCounts[index]++;
+                            totalSum += value;
+                            totalCount++;
+                            
+                            if (checkbox.checked) {
+                                selectedSum += value;
+                                selectedCount++;
+                            }
+                        }
+                    });
+                });
+
+                // Atualiza as médias dos semestres
+                const averageElements = document.querySelectorAll('.semester-average');
+                semesterAverages.forEach((sum, index) => {
+                    const average = semesterCounts[index] > 0 ? (sum / semesterCounts[index]).toFixed(2) : '-';
+                    averageElements[index].textContent = average;
+                });
+
+                // Atualiza a média total
+                const totalAverage = totalCount > 0 ? (totalSum / totalCount).toFixed(2) : '-';
+                document.querySelector('.total-average').textContent = totalAverage;
+
+                // Atualiza a média dos selecionados
+                const selectedAverage = selectedCount > 0 ? (selectedSum / selectedCount).toFixed(2) : '-';
+                document.querySelector('.selected-average').textContent = selectedAverage;
+            }
+
+            // Adiciona listeners para recalcular as médias quando houver mudanças
+            document.querySelectorAll('.grade-cell input[type="number"], .grade-cell input[type="checkbox"]').forEach(input => {
+                input.addEventListener('change', calculateAverages);
+                input.addEventListener('input', calculateAverages);
+            });
+
+            // Calcula as médias iniciais
+            calculateAverages();
+
+            // Adiciona o sistema de salvamento
+            const saveNameInput = document.getElementById('save-name');
+            const saveTableBtn = document.getElementById('save-table');
+            const savedTablesSelect = document.getElementById('saved-tables');
+            const loadTableBtn = document.getElementById('load-table');
+            const deleteTableBtn = document.getElementById('delete-table');
+
+            // Função para salvar o estado atual da tabela
+            function saveCurrentTable() {
+                const name = saveNameInput.value.trim();
+                if (!name) {
+                    alert('Por favor, insira um nome para a tabela');
+                    return;
+                }
+
+                // Coleta todos os dados da tabela
+                const tableData = {
+                    name: name,
+                    timestamp: new Date().toISOString(),
+                    semesterGrades: [],
+                    finalExams: []
+                };
+
+                // Salva as notas dos semestres
+                document.querySelectorAll('.grades-table tbody tr').forEach(row => {
+                    const subject = row.querySelector('td:first-child').textContent;
+                    const semesters = [];
+                    row.querySelectorAll('.grade-cell').forEach(cell => {
+                        semesters.push({
+                            grade: cell.querySelector('input[type="number"]').value,
+                            selected: cell.querySelector('input[type="checkbox"]').checked
+                        });
+                    });
+                    tableData.semesterGrades.push({ subject, semesters });
+                });
+
+                // Salva as notas das provas finais
+                document.querySelectorAll('.final-exams-section tbody tr').forEach(row => {
+                    const subject = row.querySelector('select') ? 
+                        row.querySelector('select').value : 
+                        'deutsch'; // Para o caso fixo do Deutsch
+                    const grade = row.querySelector('input[type="number"]').value;
+                    tableData.finalExams.push({ subject, grade });
+                });
+
+                // Salva no localStorage
+                let savedTables = JSON.parse(localStorage.getItem('savedTables') || '{}');
+                savedTables[name] = tableData;
+                localStorage.setItem('savedTables', JSON.stringify(savedTables));
+
+                // Atualiza a lista de tabelas salvas
+                updateSavedTablesList();
+                saveNameInput.value = '';
+                alert('Tabela salva com sucesso!');
+            }
+
+            // Função para carregar uma tabela salva
+            function loadSavedTable() {
+                const name = savedTablesSelect.value;
+                if (!name) {
+                    alert('Por favor, selecione uma tabela para carregar');
+                    return;
+                }
+
+                const savedTables = JSON.parse(localStorage.getItem('savedTables') || '{}');
+                const tableData = savedTables[name];
+
+                if (!tableData) {
+                    alert('Tabela não encontrada');
+                    return;
+                }
+
+                // Carrega as notas dos semestres
+                tableData.semesterGrades.forEach((subjectData, index) => {
+                    const row = document.querySelectorAll('.grades-table tbody tr')[index];
+                    if (row) {
+                        const cells = row.querySelectorAll('.grade-cell');
+                        subjectData.semesters.forEach((semester, i) => {
+                            if (cells[i]) {
+                                cells[i].querySelector('input[type="number"]').value = semester.grade;
+                                cells[i].querySelector('input[type="checkbox"]').checked = semester.selected;
+                                cells[i].querySelector('input[type="checkbox"]').dispatchEvent(new Event('change'));
+                            }
+                        });
+                    }
+                });
+
+                // Carrega as notas das provas finais
+                tableData.finalExams.forEach((exam, index) => {
+                    const row = document.querySelectorAll('.final-exams-section tbody tr')[index];
+                    if (row) {
+                        if (row.querySelector('select')) {
+                            row.querySelector('select').value = exam.subject;
+                            row.querySelector('select').dispatchEvent(new Event('change'));
+                        }
+                        row.querySelector('input[type="number"]').value = exam.grade;
+                        row.querySelector('input[type="number"]').dispatchEvent(new Event('input'));
+                    }
+                });
+
+                // Atualiza todos os cálculos
+                calculateGrades();
+                calculateAverages();
+                alert('Tabela carregada com sucesso!');
+            }
+
+            // Função para excluir uma tabela salva
+            function deleteSavedTable() {
+                const name = savedTablesSelect.value;
+                if (!name) {
+                    alert('Por favor, selecione uma tabela para excluir');
+                    return;
+                }
+
+                if (confirm(`Tem certeza que deseja excluir a tabela "${name}"?`)) {
+                    let savedTables = JSON.parse(localStorage.getItem('savedTables') || '{}');
+                    delete savedTables[name];
+                    localStorage.setItem('savedTables', JSON.stringify(savedTables));
+                    updateSavedTablesList();
+                    alert('Tabela excluída com sucesso!');
+                }
+            }
+
+            // Função para atualizar a lista de tabelas salvas
+            function updateSavedTablesList() {
+                const savedTables = JSON.parse(localStorage.getItem('savedTables') || '{}');
+                savedTablesSelect.innerHTML = '<option value="">Selecione uma tabela salva</option>';
+                
+                Object.keys(savedTables).sort().forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    savedTablesSelect.appendChild(option);
+                });
+            }
+
+            // Adiciona os event listeners
+            saveTableBtn.addEventListener('click', saveCurrentTable);
+            loadTableBtn.addEventListener('click', loadSavedTable);
+            deleteTableBtn.addEventListener('click', deleteSavedTable);
+
+            // Carrega a lista inicial de tabelas salvas
+            updateSavedTablesList();
+
+            // Adiciona validação para os inputs numéricos
+            function validateNumberInput(input) {
+                let value = parseInt(input.value);
+                if (isNaN(value)) {
+                    input.value = '';
+                } else {
+                    value = Math.max(0, Math.min(15, value));
+                    input.value = value;
+                }
+            }
+
+            // Aplica a validação para todos os inputs numéricos
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    validateNumberInput(this);
+                    calculateGrades();
+                    calculateAverages();
+                });
+            });
+
+            // Adiciona navegação por teclado para os inputs de nota
+            document.querySelectorAll('.grade-cell input[type="number"]').forEach(input => {
+                input.addEventListener('keydown', function(e) {
+                    const currentCell = this.closest('.grade-cell');
+                    const currentRow = currentCell.closest('tr');
+                    const cells = Array.from(currentRow.querySelectorAll('.grade-cell'));
+                    const rows = Array.from(document.querySelectorAll('.grades-table tbody tr'));
+                    const currentCellIndex = cells.indexOf(currentCell);
+                    const currentRowIndex = rows.indexOf(currentRow);
+
+                    let nextInput = null;
+
+                    switch(e.key) {
+                        case 'ArrowRight':
+                        case 'Tab':
+                            // Move para a próxima célula à direita
+                            if (currentCellIndex < cells.length - 1) {
+                                nextInput = cells[currentCellIndex + 1].querySelector('input[type="number"]');
+                            } else if (currentRowIndex < rows.length - 1) {
+                                // Se estiver na última célula da linha, vai para a primeira célula da próxima linha
+                                nextInput = rows[currentRowIndex + 1].querySelector('.grade-cell input[type="number"]');
+                            }
+                            if (nextInput) {
+                                e.preventDefault();
+                                nextInput.focus();
+                                nextInput.select();
+                            }
+                            break;
+
+                        case 'ArrowLeft':
+                            // Move para a célula à esquerda
+                            if (currentCellIndex > 0) {
+                                nextInput = cells[currentCellIndex - 1].querySelector('input[type="number"]');
+                            } else if (currentRowIndex > 0) {
+                                // Se estiver na primeira célula da linha, vai para a última célula da linha anterior
+                                const previousRowCells = rows[currentRowIndex - 1].querySelectorAll('.grade-cell');
+                                nextInput = previousRowCells[previousRowCells.length - 1].querySelector('input[type="number"]');
+                            }
+                            if (nextInput) {
+                                e.preventDefault();
+                                nextInput.focus();
+                                nextInput.select();
+                            }
+                            break;
+
+                        case 'ArrowUp':
+                            // Move para a célula acima
+                            if (currentRowIndex > 0) {
+                                nextInput = rows[currentRowIndex - 1].querySelectorAll('.grade-cell')[currentCellIndex].querySelector('input[type="number"]');
+                                if (nextInput) {
+                                    e.preventDefault();
+                                    nextInput.focus();
+                                    nextInput.select();
+                                }
+                            }
+                            break;
+
+                        case 'ArrowDown':
+                        case 'Enter':
+                            // Move para a célula abaixo
+                            if (currentRowIndex < rows.length - 1) {
+                                nextInput = rows[currentRowIndex + 1].querySelectorAll('.grade-cell')[currentCellIndex].querySelector('input[type="number"]');
+                                if (nextInput) {
+                                    e.preventDefault();
+                                    nextInput.focus();
+                                    nextInput.select();
+                                }
+                            }
+                            break;
+
+                        case ' ':
+                            // Espaço marca/desmarca o checkbox da célula atual
+                            e.preventDefault();
+                            const checkbox = currentCell.querySelector('input[type="checkbox"]');
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.dispatchEvent(new Event('change'));
+                            break;
+                    }
+                });
+
+                // Seleciona todo o conteúdo quando o input recebe foco
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+            });
+
+
+
+
+
+
+
+            // Adiciona funcionalidade para o botão de toggle do sidebar
+            const toggleRulesBtn = document.getElementById('rules-toggle');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+            const rulesSection = document.querySelector('.rules-section');
+            const contentWrapper = document.querySelector('.content-wrapper');
+            
+            // Configura o ícone e texto inicial
+            toggleRulesBtn.innerHTML = '<i class="fas fa-tasks"></i> Regras';
+            
+            // Botão para abrir o sidebar
+            toggleRulesBtn.addEventListener('click', function() {
+                rulesSection.classList.remove('collapsed');
+                contentWrapper.classList.remove('sidebar-collapsed');
+            });
+            
+            // Botão para fechar o sidebar
+            closeSidebarBtn.addEventListener('click', function() {
+                rulesSection.classList.add('collapsed');
+                contentWrapper.classList.add('sidebar-collapsed');
+            });
+
+            // Função para atualizar o contador de regras atendidas
+            function updateRulesCounter() {
+                const validRules = document.querySelectorAll('.rule-item.valid').length;
+                const totalRules = document.querySelectorAll('.rule-item').length;
+                
+                document.getElementById('rules-valid-count').textContent = validRules;
+                document.getElementById('rules-total-count').textContent = totalRules;
+                
+                // Atualiza a cor do contador com base no progresso
+                const counterElement = document.getElementById('rules-counter');
+                if (validRules === totalRules) {
+                    counterElement.style.backgroundColor = '#e8f5e9';
+                    counterElement.style.borderLeft = '4px solid #4caf50';
+                } else if (validRules >= totalRules / 2) {
+                    counterElement.style.backgroundColor = '#fff8e1';
+                    counterElement.style.borderLeft = '4px solid #ffc107';
+                } else {
+                    counterElement.style.backgroundColor = '#f0f8f0';
+                    counterElement.style.borderLeft = '4px solid #ddd';
+                }
+            }
+            
+            // Chama a função uma vez para inicializar o contador
+            updateRulesCounter();
+        });
+
+        // Info Modal Functions
+        const infoModal = document.getElementById('infoModal');
+        const showInfoBtn = document.getElementById('showInfoBtn');
+
+        function showInfoModal() {
+            infoModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+
+        function closeInfoModal() {
+            infoModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling when modal is closed
+        }
+
+        showInfoBtn.addEventListener('click', showInfoModal);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === infoModal) {
+                closeInfoModal();
+            }
+        });
+    </script>
+</body>
+</html> 
