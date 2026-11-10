@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2c3e50">
     <title>Tabela de Notas para Abitur</title>
 
     <link rel="stylesheet" href="styles.css">
@@ -627,6 +628,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 
@@ -831,13 +833,13 @@
 
             <section class="info-section">
                 <div class="save-load-section" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div class="save-row">
                         <input type="text" id="save-name" placeholder="Nome da tabela" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <button id="save-table" style="padding: 8px 16px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                             <i class="fas fa-save"></i> Salvar
                         </button>
                     </div>
-                    <div style="display: flex; gap: 10px;">
+                    <div class="load-row">
                         <select id="saved-tables" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             <option value="">Selecione uma tabela salva</option>
                         </select>
@@ -1220,6 +1222,12 @@
                         </div>
                     </div>
                 </div>
+                <div class="autocalc-bar">
+                    <button id="autocalc-btn" type="button" disabled>
+                        <i class="fas fa-calculator"></i> Calcular melhor nota
+                    </button>
+                    <p id="autocalc-hint" role="status" aria-live="polite"></p>
+                </div>
             </section>
         </div>
     </main>
@@ -1237,6 +1245,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Função auxiliar para encontrar uma linha por matéria
             function findRowBySubject(subject) {
+                if (subject === 'Biologie') subject = 'Bio'; // opção do select usa o nome completo
                 return Array.from(document.querySelectorAll('.grades-table tbody tr'))
                     .find(row => row.querySelector('td:first-child').textContent.trim() === subject);
             }
@@ -2037,6 +2046,13 @@
                 contentWrapper.classList.add('sidebar-collapsed');
             });
 
+            // Em telas pequenas, tocar no fundo escurecido fecha a gaveta de regras
+            contentWrapper.addEventListener('click', function(e) {
+                if (e.target === contentWrapper && window.matchMedia('(max-width: 1200px)').matches) {
+                    closeSidebarBtn.click();
+                }
+            });
+
             // Função para atualizar o contador de regras atendidas
             function updateRulesCounter() {
                 const validRules = document.querySelectorAll('.rule-item.valid').length;
@@ -2086,5 +2102,6 @@
             }
         });
     </script>
+    <script src="autocalc.js"></script>
 </body>
 </html> 

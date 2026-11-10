@@ -1,0 +1,253 @@
+/* Ajustes responsivos (iPad e celular). Carregado por último para ter prioridade. */
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+img, svg, video { max-width: 100%; height: auto; }
+
+/* Linhas de salvar/carregar: antes eram estilos inline que estouravam no celular */
+.save-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.save-row #save-name,
+.load-row #saved-tables { flex: 1; min-width: 0; }
+.load-row { display: flex; gap: 10px; }
+
+.save-load-section button,
+.save-load-section input,
+.save-load-section select { min-height: 40px; font-size: 16px; }
+
+/* Alvos de toque confortáveis em telas touch (iPad e celular) */
+@media (pointer: coarse) {
+    .grades-table input[type="number"] { min-height: 40px; font-size: 16px; }
+    .grades-table input[type="checkbox"],
+    .select-all-container input[type="checkbox"] { width: 22px; height: 22px; }
+    .subject-select { min-height: 40px; font-size: 16px; }
+    #showInfoBtn { min-height: 44px; }
+}
+
+/* ---------- Tablet e abaixo (<= 1200px): regras viram gaveta inferior ---------- */
+@media (max-width: 1200px) {
+    .content-wrapper { padding: 0 16px; }
+
+    .rules-section,
+    .rules-section.collapsed {
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        width: auto !important;
+        max-width: 640px;
+        margin: 0 auto !important;
+        height: auto !important;
+        max-height: 80vh;
+        max-height: 80dvh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        padding: 20px 20px calc(20px + env(safe-area-inset-bottom)) !important;
+        border-radius: 16px 16px 0 0 !important;
+        border-left: none;
+        border-top: 4px solid #4caf50;
+        box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.25);
+        z-index: 1001 !important;
+        transform: translateY(0) !important;
+        visibility: visible;
+        transition: transform 0.3s ease, visibility 0s linear 0s;
+    }
+    .rules-section.collapsed {
+        transform: translateY(110%) !important;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.3s ease, visibility 0s linear 0.3s;
+    }
+
+    /* Fundo escurecido quando a gaveta está aberta; clique fecha (ver script) */
+    .content-wrapper:not(.sidebar-collapsed)::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1000;
+    }
+
+    /* Botão flutuante "Regras" em formato de pílula */
+    #rules-toggle,
+    .content-wrapper:not(.sidebar-collapsed) #rules-toggle {
+        position: fixed !important;
+        top: auto !important;
+        left: auto !important;
+        right: calc(16px + env(safe-area-inset-right)) !important;
+        bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+        width: auto !important;
+        height: 48px !important;
+        padding: 0 18px;
+        border-radius: 24px !important;
+        background-color: #4caf50 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        z-index: 999 !important;
+        white-space: nowrap;
+    }
+    #rules-toggle:before { display: none !important; }
+    #rules-toggle:hover { transform: none; }
+    .content-wrapper:not(.sidebar-collapsed) #rules-toggle { display: none; }
+
+    /* Botão de fechar maior e dentro da gaveta */
+    #close-sidebar {
+        width: 40px;
+        height: 40px;
+        top: -4px;
+        right: -4px;
+        margin: 0;
+        float: none;
+    }
+
+    .info-section,
+    .content-wrapper.sidebar-collapsed .info-section,
+    .content-wrapper:not(.sidebar-collapsed) .info-section {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto !important;
+    }
+
+    /* espaço para o botão flutuante não cobrir o fim da página */
+    main { padding-bottom: 80px; }
+}
+
+/* ---------- iPad retrato e tablets pequenos ---------- */
+@media (min-width: 641px) and (max-width: 1200px) {
+    .content-wrapper { padding: 0 24px; }
+    .grades-table th, .grades-table td { padding: 10px; }
+    .grades-table input[type="number"] { width: 64px; }
+}
+
+/* ---------- Celular (<= 640px) ---------- */
+@media (max-width: 640px) {
+    .page-header { margin: 16px 0 !important; padding: 16px !important; }
+    .page-header h1 { font-size: 1.7em !important; line-height: 1.2; }
+    .page-header p { font-size: 1em !important; }
+
+    .content-wrapper { padding: 0 10px; }
+
+    /* Salvar/carregar empilhados */
+    .save-load-section { padding: 12px !important; }
+    .save-row { flex-wrap: wrap; }
+    .save-row #save-name { flex: 1 1 100% !important; }
+    .save-row #save-table { flex: 1; }
+    .load-row { flex-wrap: wrap; }
+    .load-row #saved-tables { flex: 1 1 100% !important; }
+    .load-row button { flex: 1; }
+
+    .select-all-container { margin: 8px 0; }
+    .select-all-container label { font-size: 13px; }
+
+    /* Tabela de notas: cabe em 360px sem rolar horizontalmente */
+    .grades-table { margin: 12px 0; font-size: 13px; }
+    .grades-table th, .grades-table td { padding: 6px 3px; }
+    .grades-table th { font-size: 11px; line-height: 1.2; }
+    .grades-table td:first-child { text-align: left; padding-left: 6px; font-size: 12px; overflow-wrap: anywhere; }
+    .info-section > .grades-table th:not(:first-child),
+    .info-section > .grades-table td:not(:first-child) { width: 14%; }
+    .grade-cell { flex-direction: column; gap: 6px; }
+    .grades-table input[type="number"] { width: 42px; padding: 4px 2px; font-size: 16px; }
+
+    /* Tabela de provas finais: select ocupa a linha toda */
+    .final-exams-section h2,
+    .grades-calculation-section h2 { font-size: 1.3rem; }
+    .subject-select { width: 100%; min-width: 0; }
+    .final-exams-section .grades-table input[type="number"] { width: 64px; }
+
+    .grades-calculation-section { padding: 14px !important; }
+    .grades-calculation-section > div { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+
+    /* Modal "Como usar" */
+    #infoModal .modal-content {
+        padding: 20px 16px !important;
+        width: 94% !important;
+        max-height: 88vh !important;
+        max-height: 88dvh !important;
+    }
+}
+
+/* Telefones muito estreitos */
+@media (max-width: 360px) {
+    .grades-table th { font-size: 10px; }
+    .grades-table input[type="number"] { width: 40px; }
+}
+
+/* Celular deitado: gaveta mais baixa */
+@media (max-height: 480px) and (orientation: landscape) {
+    .rules-section, .rules-section.collapsed { max-height: 90vh; max-height: 90dvh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}
+
+/* ---------- Botão "Calcular melhor nota" ---------- */
+.autocalc-bar {
+    position: sticky;
+    bottom: 12px;
+    z-index: 50;
+    margin: 28px 0 8px;
+    padding: 12px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+}
+#autocalc-btn {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+#autocalc-btn:not(:disabled):hover { box-shadow: 0 4px 12px rgba(46, 125, 50, 0.5); }
+#autocalc-btn:not(:disabled):active { transform: scale(0.98); }
+#autocalc-btn:disabled {
+    background: #cfd4d9;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+#autocalc-hint {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #444;
+}
+@media (min-width: 1201px) {
+    .autocalc-bar { max-width: 520px; margin-left: auto; margin-right: auto; }
+}
+@media (max-width: 1200px) {
+    .autocalc-bar {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        margin: 0;
+        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+        border-radius: 16px 16px 0 0;
+        z-index: 998;
+    }
+    /* abre espaço para a barra e sobe o botão "Regras" acima dela */
+    main { padding-bottom: 150px; }
+    #rules-toggle,
+    .content-wrapper:not(.sidebar-collapsed) #rules-toggle {
+        bottom: calc(112px + env(safe-area-inset-bottom)) !important;
+    }
+}
